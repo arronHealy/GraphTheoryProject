@@ -1,32 +1,48 @@
 # Arron Healy 
-# shunting algorithm
-# convert strings from infix to postfix
+# 3rd year Software
+# Graph Theory Project
+# Thompsons Construction
+
+
+# shunting yard algorithm
+# convert regular expressions from infix to postfix
  
 def shunt(infix):
 
+    """Shunting yard algorithm for converting regular expressions from infix to postfix"""
+
+    # special characters and their precedence
     specials = {
         "*": 50,
         ".": 40,
         "|": 30
     }
 
+    # return postfix string
     postfix = ""
+    # operator stack
     stack = ""
 
+    # loop for each character in input string
     for i in infix:
+        # if open bracket push to stack
         if i == "(":
             stack += i
+        # if closing bracket, pop from stack, push to output until opening bracket
         elif i == ")":
             while stack[-1] != "(":
                 postfix, stack = postfix + stack[-1], stack[:-1]
             stack = stack[:-1]
+        # if theres an operator, push to stack after popping lower or equal precedence operators from top of stack output
         elif i in specials:
             while stack and specials.get(i, 0) <= specials.get(stack[-1], 0):
                 postfix, stack = postfix + stack[-1], stack[:-1]
             stack = stack + i
+        # regular characters are pushed immediately to the output
         else:
             postfix = postfix + i
 
+    # pop all remaining operator characters from stack
     while stack:
         postfix, stack = postfix + stack[-1], stack[:-1]
     
@@ -34,7 +50,7 @@ def shunt(infix):
 
 
 
-print(shunt("(a.b)|(c*.d)"))
+#print(shunt("(a.b)|(c*.d)"))
 
 # Thompsons construction
 # build nfa's from postfix regular expressions
@@ -59,6 +75,9 @@ class nfa:
 
 
 def compile(postfix):
+
+    """Compiles a postfix regular expression into a NFA"""
+
     stack = []
 
     for c in postfix:
@@ -117,4 +136,65 @@ def compile(postfix):
         
     return stack.pop()
 
-print(compile("ab.cd.|"))
+#print(compile("ab.cd.|"))
+
+def followes(state):
+    """Return the set of states that can be reached from the state following e arrows"""
+
+    # create a new set, with state as its only member
+    states = set()
+    states.add(state)
+
+    # check if state has arrows labelled e from it
+    if state.label is None:
+        # check if edge1 is a state
+        # if theres an edge1, follow it
+        if state.edge1 is not None:
+            states |= followes(state.edge1)
+        
+        #if theres an edge2, follow it
+        if state.edge2 is not None:
+            states |= followes(state.edge2)
+
+    # return set of states
+    return states
+
+
+def match(infix, string):
+
+    """Matches string to infix regular expression"""
+
+    # shunt and compile the regular expression
+    postfix = shunt(infix)
+    nfa = compile(postfix)
+
+    # the current set of states and next set of states
+    currentSet = set()
+    nextSet = set()
+
+    # add initial state to the current set of states
+    currentSet |= followes(nfa.initial)
+
+    # loop through each character in string
+    for s in string:
+        # loop through the current set of states
+        for c in currentSet:
+            # check if that state is labelled s.
+            if c.label == s:
+                # add the edge1 state to the next set
+              nextSet |= followes(c.edge1)
+        # set current to next, and clear out next
+        currentSet = nextSet
+        nextSet = set()
+
+    # check if the accept state is in the set of current states
+    return (nfa.accept in currentSet)
+
+
+infixes = ['a.b.c*', 'a.(b|d).c*', '(a.(b|d))', 'a.(b.b)*.c']
+strings = ['', 'abbc', 'abcc', 'abad', 'abbbc']
+
+
+for i in infixes:
+    for s in strings:
+        print(match(i, s), i, s)
