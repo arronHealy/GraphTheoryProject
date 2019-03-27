@@ -13,8 +13,8 @@ def shunt(infix):
 
     # special characters and their precedence
     specials = {
-        "+": 70,
-        "?": 60,
+        "+": 50,
+        "?": 50,
         "*": 50,
         ".": 40,
         "|": 30
@@ -146,7 +146,7 @@ def compile(postfix):
             # point new initial state edge1 to popped nfa's initial state 
             initial.edge1 = nfa1.initial
 
-            # point popped nfa's accept states edge1 back to popped initial state
+            # point popped nfa's accept state edge1 back to popped initial state
             nfa1.accept.edge1 = nfa1.initial
 
             # point popped nfa's accept state to new accept state
