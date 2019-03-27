@@ -13,6 +13,8 @@ def shunt(infix):
 
     # special characters and their precedence
     specials = {
+        "+": 70,
+        "?": 60,
         "*": 50,
         ".": 40,
         "|": 30
@@ -49,7 +51,7 @@ def shunt(infix):
     return postfix
 
 
-
+# tested shunt function
 #print(shunt("(a.b)|(c*.d)"))
 
 # Thompsons construction
@@ -86,8 +88,10 @@ def compile(postfix):
             # pop 2 nfa's off the stack
             nfa2 = stack.pop()
             nfa1 = stack.pop()
+            
             # connect first nfa's accept state to the seconds initial
             nfa1.accept.edge1 = nfa2.initial
+            
             # push nfa to stack
             stack.append(nfa(nfa1.initial, nfa2.accept))
 
@@ -106,6 +110,7 @@ def compile(postfix):
             accept = state()
             nfa1.accept.edge1 = accept
             nfa2.accept.edge1 = accept
+            
             # push new nfa to the stack
             stack.append(nfa(initial, accept))
 
@@ -176,14 +181,17 @@ def compile(postfix):
             # create new initial and accept state
             accept = state()
             initial = state()
+
             # join initial to accept state using an arrow labeled c 
             initial.label = c
             initial.edge1 = accept
+            
             # push new nfa to stack
             stack.append(nfa(initial, accept))
         
     return stack.pop()
 
+# tested compile function
 #print(compile("ab.cd.|"))
 
 def followes(state):
