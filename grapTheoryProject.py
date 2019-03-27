@@ -81,6 +81,7 @@ def compile(postfix):
     stack = []
 
     for c in postfix:
+        # dot operator concatenates 2 nfa's together
         if c == '.':
             # pop 2 nfa's off the stack
             nfa2 = stack.pop()
@@ -89,6 +90,8 @@ def compile(postfix):
             nfa1.accept.edge1 = nfa2.initial
             # push nfa to stack
             stack.append(nfa(nfa1.initial, nfa2.accept))
+
+        # OR operator allows for alternation between nfa's
         elif c == '|':
             # pop 2 nfa's off the stack
             nfa2 = stack.pop()
@@ -105,6 +108,8 @@ def compile(postfix):
             nfa2.accept.edge1 = accept
             # push new nfa to the stack
             stack.append(nfa(initial, accept))
+
+        # check for zero or more if * character encountered
         elif c == '*':
             # pop a single nfa off the stack
             nfa1 = stack.pop()
@@ -123,6 +128,8 @@ def compile(postfix):
 
             # push new nfa to stack
             stack.append(nfa(initial, accept))
+
+        # check for one or more characters if + operator encountered
         elif c == "+":
             # pop a single nfa off the stack
             nfa1 = stack.pop()
@@ -146,6 +153,28 @@ def compile(postfix):
             # push new nfa onto the stack
             stack.append(nfa(nfa1.initial, newNfa.accept))
 
+        # check for zero or one character if ? encountered in expression
+        elif c == "?":
+            # pop a single nfa from the stack
+            nfa1 = stack.pop()
+
+            # create new initial and accept state
+            initial = state()
+            accept = state()
+
+            # point new initial state edge1 to popped nfa's initial state 
+            initial.edge1 = nfa1.initial
+
+            # point new initial states edge2 to new accept state
+            initial.edge2 = accept
+
+            # point popped nfa's accept state edge1 to new accept state 
+            nfa1.accept.edge1 = accept
+
+            # push new nfa to stack
+            stack.append(nfa(initial, accept))
+
+        # create new nfa for literal characters
         else:
             # create new initial and accept state
             accept = state()
@@ -213,8 +242,8 @@ def match(infix, string):
     return (nfa.accept in currentSet)
 
 
-infixes = ['a.b.c*', 'a.b.c+', 'a.(b|d).c*', '(a.(b|d))', 'a.(b.b)*.c']
-strings = ['', 'abbc', 'abcc', 'abad', 'abbbc']
+infixes = ['a.b.c*', 'a.b.c+', 'a.(b|d).c*', '(a.(b|d))', 'a.(b.b)*.c', 'a.b.c?']
+strings = ['', 'abbc', 'abcc', 'abad', 'abbbc', 'ab', 'abc']
 
 
 for i in infixes:
