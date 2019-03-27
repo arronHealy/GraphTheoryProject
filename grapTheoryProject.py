@@ -123,7 +123,29 @@ def compile(postfix):
 
             # push new nfa to stack
             stack.append(nfa(initial, accept))
-    
+        elif c == "+":
+            # pop a single nfa off the stack
+            nfa1 = stack.pop()
+
+            # create new initial and accept state
+            initial = state()
+            accept = state()
+
+            # create a new nfa
+            newNfa = nfa(initial, accept)
+
+            # point popped nfa's accept state edge1 back to it's initial state
+            nfa1.accept.edge1 = nfa1.initial
+
+            # point popped nfa's accept state edge2 to the new nfa's initial state
+            nfa1.accept.edge2 = newNfa.initial
+
+            # point new initial states edge1 to new accept state
+            newNfa.initial.edge1 = newNfa.accept
+
+            # push new nfa onto the stack
+            stack.append(nfa(nfa1.initial, newNfa.accept))
+
         else:
             # create new initial and accept state
             accept = state()
@@ -191,7 +213,7 @@ def match(infix, string):
     return (nfa.accept in currentSet)
 
 
-infixes = ['a.b.c*', 'a.(b|d).c*', '(a.(b|d))', 'a.(b.b)*.c']
+infixes = ['a.b.c*', 'a.b.c+', 'a.(b|d).c*', '(a.(b|d))', 'a.(b.b)*.c']
 strings = ['', 'abbc', 'abcc', 'abad', 'abbbc']
 
 
