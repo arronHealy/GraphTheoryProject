@@ -138,20 +138,17 @@ def compile(postfix):
             initial = state()
             accept = state()
 
-            # create a new nfa
-            newNfa = nfa(initial, accept)
+            # point new initial state edge1 to popped initial state 
+            initial.edge1 = nfa1.initial
 
-            # point popped nfa's accept state edge1 back to it's initial state
+            # point popped accept states edge1 back to popped initial state
             nfa1.accept.edge1 = nfa1.initial
 
-            # point popped nfa's accept state edge2 to the new nfa's initial state
-            nfa1.accept.edge2 = newNfa.initial
+            # point popped nfa's accept state to new accept state
+            nfa1.accept.edge2 = accept
 
-            # point new initial states edge1 to new accept state
-            newNfa.initial.edge1 = newNfa.accept
-
-            # push new nfa onto the stack
-            stack.append(nfa(nfa1.initial, newNfa.accept))
+            # push new nfa to stack
+            stack.append(nfa(initial, accept))
 
         # check for zero or one character if ? encountered in expression
         elif c == "?":
